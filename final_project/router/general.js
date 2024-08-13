@@ -19,32 +19,69 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  res.json(books);
+public_users.get('/', function (req, res) {
+  Promise.resolve(books)
+      .then(data => {
+          res.json(data);
+      })
+      .catch(error => {
+          res.status(500).json({ message: "Error fetching data." || error.message});
+      });
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+public_users.get('/isbn/:isbn', function (req, res) {
   const isbn = req.params.isbn;
-  res.send(books[isbn]);
- });
+
+  Promise.resolve(books[isbn])
+      .then(book => {
+          if (book) {
+              res.json(book);
+          } else {
+              res.status(404).json({ message: "Book not existing." });
+          }
+      })
+      .catch(error => {
+          res.status(500).json({ message: "Error fetching data." || error.message });
+      });
+});
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   const author = req.params.author;
-  const results = Object.keys(books)
-    .map(key => books[key])
-    .filter(book => book.author === author);
-  res.send(results);
+
+    Promise.resolve(Object.keys(books)
+        .map(key => books[key])
+        .filter(book => book.author === author))
+        .then(results => {
+            if (results.length > 0) {
+              res.json(results);
+            } else {
+              res.status(404).json({ message: "No books found for this author." });
+            }
+        })
+        .catch(error => {
+            res.status(500).json({ message: "Error fetching data." || error.message });
+        });
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+public_users.get('/title/:title', function (req, res) {
   const title = req.params.title;
-  const results = Object.keys(books)
-    .map(key => books[key])
-    .filter(book => book.title === title);
-  res.send(results);
+
+  Promise.resolve(Object.keys(books)
+      .map(key => books[key])
+      .filter(book => book.title === title))
+      .then(results => {
+          if (results.length > 0) {
+              res.json(results);
+          } else {
+              res.status(404).json({ message: "No books found with this title." });
+          }
+      })
+      .catch(error => {
+          res.status(500).json({ message: "Error fetching data" || error.message });
+      });
 });
 
 //  Get book review
